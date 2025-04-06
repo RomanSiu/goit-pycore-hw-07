@@ -1,3 +1,4 @@
+import pickle
 from collections import UserDict
 from datetime import datetime as dtdt
 from datetime import timedelta
@@ -107,7 +108,7 @@ class Record:
 
         for phone in self.phones:
             if old_phone == phone.value and new_phone.value:
-                phone.value = new_phone
+                phone.value = new_phone.value
                 return f"Phone {old_phone} changed to {new_phone}.", "success"
 
         return "No such phone exists.", "warning"
@@ -219,6 +220,7 @@ def show_phone(args, book):
 def show_all(book):
     phones = []
     for rec in book.values():
+
         rec_phones = ", ".join([i.value for i in rec.phones])
         phones.append(f"{rec.name.value.capitalize()}: {rec_phones}")
     return phones, "common list"
@@ -246,8 +248,21 @@ def show_birthday(args, book):
         return record
 
 
+def save_data(book, filename="data/addressbook.pkl"):
+    with open(filename, "wb") as f:
+        pickle.dump(book, f)
+
+
+def load_data(filename="data/addressbook.pkl"):
+    try:
+        with open(filename, "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        return AddressBook()
+
+
 def main():
-    book = AddressBook()
+    book = load_data()
     print("Welcome to the assistant bot!")
     while True:
         command = input("Write a command: ")
@@ -275,6 +290,7 @@ def main():
                 output(*show_all(book))
             case _:
                 output("Invalid command.", "error")
+    save_data(book)
 
 
 if __name__ == '__main__':
